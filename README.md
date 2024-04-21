@@ -29,6 +29,10 @@ npm run dev
 
 Access the application at `http://localhost:3000`.
 
+## Application Screenshot
+
+![Application Screenshot](/assets/aircraft-scheduling-app-ss.jpg)
+
 ## Technologies Utilized
 - **React**: A JavaScript library for building user interfaces.
 - **Next.js**: A React framework for server-side rendering and generating static websites.
