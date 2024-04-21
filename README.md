@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Aircraft Scheduling Application
 
-## Getting Started
+## How to Run the Application
 
-First, run the development server:
+### Prerequisites
+- Node.js (latest LTS version recommended): [Download Node.js](https://nodejs.org/)
+- Git (optional, if you plan to clone the repository)
 
+### Setup
+Clone the repository or download the source code:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Navigate to the project directory:
+```bash
+cd my-aircraft-scheduling-app
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Install Dependencies
+```bash
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Run the Application in Development Mode
+```bash
+npm run dev
+```
 
-## Learn More
+Access the application at `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
+## Technologies Utilized
+- **React**: A JavaScript library for building user interfaces.
+- **Next.js**: A React framework for server-side rendering and generating static websites.
+- **TailwindCSS**: A utility-first CSS framework for rapidly building custom designs.
+- **Radix-ui**: Low-level UI primitives for building accessible design systems and web apps.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Assumptions
+- **Aircraft Starting Locations**: Assumed each aircraft could start from any location as initial base locations did not match flight airports.
+- **Operational Period**: A 24-hour period was assumed for calculating aircraft utilization and timeline representation.
+- **Usage of Radix-ui**: Utilized Radix-ui's HoverCard component for displaying timeline segment details.
+- **Flight Selection Logic**: Enforced logical and chronological order in flight selection with UI feedback to facilitate operational integrity.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Areas for Enhancement
+- **Testing**: Implement unit and integration tests to ensure application stability.
+- **Performance**:
+  - **Lazy Loading/Pagination**: Consider if dataset size increases.
+  - **Memoization**: Prevent unnecessary re-renders using React techniques.
+- **User Interface**:
+  - **Responsiveness**: Ensure full responsiveness across all devices.
+  - **Theme Toggling**: Allow users to switch between light and dark modes.
+  - **Accessibility**: Improve keyboard navigability and screen reader support.
+- **New Features**:
+  - **Multi-Day Scheduling**: Extend scheduling functionality to multiple days.
+  - **Route Suggestion**: Suggest optimal rotations based on starting location.
+- **Documentation and Advanced Metrics**: Enhance documentation and integrate operational metrics for better decision-making.
