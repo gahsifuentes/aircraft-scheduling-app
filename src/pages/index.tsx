@@ -1,9 +1,8 @@
-// src/pages/index.tsx
 import { useAirline } from '@/context/AirlineContext';
 import React, { useEffect, useState } from 'react';
 import AircraftList from '../app/components/AircraftList';
 import Rotation from '../app/components/Rotation';
-import FlightList from '../app/components/FlightList';
+import FlightList from '../app/components/flights/FlightList';
 
 
 const Home = () => {

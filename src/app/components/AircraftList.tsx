@@ -11,6 +11,7 @@ const AircraftList = () => {
     flights,
   } = useAirline();
 
+  // Calculates the utilization percentage of an aircraft based on its rotation.
   const calculateUtilization = (aircraftIdent: string): string => {
     const rotationIds = rotations[aircraftIdent];
     if (!rotationIds || rotationIds.length === 0) return "0%";
@@ -18,22 +19,22 @@ const AircraftList = () => {
     // Fetching flight details from the flights array
     const rotationFlights = rotationIds
       .map((id) => flights.find((flight) => flight.ident === id))
-      .filter((flight) => flight !== undefined); // Ensure no undefined entries
+      .filter((flight) => flight !== undefined); // Filtering out undefined to ensure all entries are valid flights
 
+    // Calculate total flight time in seconds
     const totalScheduledTime = rotationFlights.reduce((total, flight) => {
-      // Ensure flight is defined before accessing its properties
       if (flight) {
         return total + (flight.arrivaltime - flight.departuretime);
       }
       return total;
     }, 0);
 
-    // Convert seconds to hours and calculate utilization
+    // Convert total flight time from seconds to hours and calculate utilization percentage
     const utilization = (totalScheduledTime / 3600 / 24) * 100; // 3600 seconds in an hour, 24 hours in a day
     return utilization.toFixed(2) + "%";
   };
 
-  // Set the first aircraft as selected by default on initial render
+  // Effect hook to set the first aircraft as selected by default on initial render
   useEffect(() => {
     if (aircrafts.length > 0 && !selectedAircraft) {
       setSelectedAircraft(aircrafts[0]);

@@ -2,119 +2,100 @@ import React from "react";
 import { Flight } from "@/context/AirlineContext";
 import * as HoverCard from "@radix-ui/react-hover-card";
 
+enum SegmentType {
+  FLIGHT = "flight",
+  TURNAROUND = "turnaround",
+  IDLE = "idle",
+}
+
+interface Segment {
+  type: SegmentType;
+  duration: number;
+  startTime: number;
+}
+
 interface AircraftTimelineProps {
   rotationFlights: Flight[];
 }
 
-const AircraftTimeline: React.FC<AircraftTimelineProps> = ({
-  rotationFlights,
-}) => {
-  const totalTime = 1440; // Total minutes in a day
+const TOTAL_TIME = 1440; // Total minutes in a day
+const TURNAROUND_TIME = 20; // Turnaround time in minutes
 
-  const formatTime = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours.toString().padStart(2, "0")}:${mins
-      .toString()
-      .padStart(2, "0")}`;
-  };
+const AircraftTimeline: React.FC<AircraftTimelineProps> = ({ rotationFlights }) => {
+  const segments = calculateSegments(rotationFlights);
 
-  const segments = [];
-  let lastEndTime = 0; // End time of the last segment
-
-  // Calculate initial idle time if necessary
-  if (rotationFlights.length > 0 && rotationFlights[0].departuretime / 60 > 0) {
-    const firstFlightStart = rotationFlights[0].departuretime / 60;
-    segments.push({ type: "idle", duration: firstFlightStart, startTime: 0 });
-    lastEndTime = firstFlightStart;
-  }
-
-  rotationFlights.forEach((flight, index) => {
-    const startMinute = flight.departuretime / 60;
-    const endMinute = flight.arrivaltime / 60;
-    const flightDuration = endMinute - startMinute;
-
-    // Add flight segment
-    segments.push({
-      type: "flight",
-      duration: flightDuration,
-      startTime: startMinute,
-    });
-    lastEndTime = endMinute;
-
-    // Always add a 20-minute turnaround time after each flight
-    const turnaroundTime = 20;
-    if (lastEndTime + turnaroundTime <= totalTime) {
-      // Check if adding turnaround exceeds the total time
-      segments.push({
-        type: "turnaround",
-        duration: turnaroundTime,
-        startTime: endMinute,
-      });
-      lastEndTime += turnaroundTime;
-    }
-
-    // Calculate and add idle time between flights if needed
-    const nextFlightStart =
-      index < rotationFlights.length - 1
-        ? rotationFlights[index + 1].departuretime / 60
-        : totalTime;
-    if (lastEndTime < nextFlightStart) {
-      // Only add idle time if there's a gap
-      segments.push({
-        type: "idle",
-        duration: nextFlightStart - lastEndTime,
-        startTime: lastEndTime,
-      });
-      lastEndTime = nextFlightStart;
-    }
-  });
-
-  // Ensure that the timeline fills the container correctly
   return (
-    <div className="sticky bottom-0 w-full bg-white dark:bg-gray-900 px-2 ">
-      <div className="text-center font-bold mb-4 pt-2">Aircraft Timeline</div>
+    <div className="sticky bottom-0 w-full bg-white dark:bg-gray-900 px-2 py-4">
+      <div className="text-center font-bold mb-4">Aircraft Timeline</div>
       <div className="flex h-5">
         {segments.map((segment, index) => (
           <HoverCard.Root key={index}>
             <HoverCard.Trigger asChild>
-              <div
-                className="cursor-pointer transform hover:scale-95 transition duration-300 h-8 rounded"
-                style={{
-                  flex: `${(segment.duration / totalTime) * 100}%`,
-                  backgroundColor: getColor(segment.type),
-                }}
-              ></div>
+              <div className={`cursor-pointer transform hover:scale-95 transition duration-300 h-8 rounded ${segmentClasses(segment.type)}`}
+                   style={{ flex: `${(segment.duration / TOTAL_TIME) * 100}%` }}>
+              </div>
             </HoverCard.Trigger>
             <HoverCard.Content className="bg-white dark:bg-gray-800 p-2 shadow-lg rounded-lg border border-gray-300 dark:border-gray-600">
               <div className="font-bold text-sm text-black dark:text-slate-200">
-                {`${
-                  segment.type.charAt(0).toUpperCase() + segment.type.slice(1)
-                }: ${formatTime(segment.startTime)} - ${formatTime(
-                  segment.startTime + segment.duration
-                )}`}
+                {`${segment.type.charAt(0).toUpperCase() + segment.type.slice(1)}: ${formatTime(segment.startTime)} - ${formatTime(segment.startTime + segment.duration)}`}
               </div>
               <HoverCard.Arrow className="fill-current text-white dark:text-gray-600" />
             </HoverCard.Content>
           </HoverCard.Root>
         ))}
       </div>
-      <div className="text-center italic text-sm text-gray-600 dark:text-gray-300 mt-4">
-        Hover over each event to see more details.
-      </div>
     </div>
   );
-
-  function getColor(type: string): string {
-    switch (type) {
-      case "flight":
-        return "green";
-      case "turnaround":
-        return "purple";
-      default:
-        return "gray"; // Idle times
-    }
-  }
 };
+
+function calculateSegments(rotationFlights: Flight[]): Segment[] {
+  const segments: Segment[] = [];
+  let lastEndTime = 0;
+
+  rotationFlights.forEach((flight, index) => {
+    const startMinute = flight.departuretime / 60;
+    const endMinute = flight.arrivaltime / 60;
+
+    // Add first IDLE segment
+    if (index === 0 && startMinute > 0) {
+      segments.push({ type: SegmentType.IDLE, duration: startMinute, startTime: 0 });
+    }
+
+    // Add Flight Segment
+    segments.push({ type: SegmentType.FLIGHT, duration: endMinute - startMinute, startTime: startMinute });
+    lastEndTime = endMinute + TURNAROUND_TIME;
+
+    // Add Turnaround Segment
+    segments.push({ type: SegmentType.TURNAROUND, duration: TURNAROUND_TIME, startTime: endMinute });
+
+    if (index < rotationFlights.length - 1) {
+      const nextStart = rotationFlights[index + 1].departuretime / 60;
+      if (lastEndTime < nextStart) {
+        segments.push({ type: SegmentType.IDLE, duration: nextStart - lastEndTime, startTime: lastEndTime });
+      }
+    }
+  });
+
+  // Add Last IDLE Segment
+  if (lastEndTime < TOTAL_TIME) {
+    segments.push({ type: SegmentType.IDLE, duration: TOTAL_TIME - lastEndTime, startTime: lastEndTime });
+  }
+
+  return segments;
+}
+
+function formatTime(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+
+function segmentClasses(type: SegmentType): string {
+  switch (type) {
+    case SegmentType.FLIGHT: return "bg-green-500";
+    case SegmentType.TURNAROUND: return "bg-purple-500";
+    default: return "bg-gray-500"; // Idle times
+  }
+}
 
 export default AircraftTimeline;
